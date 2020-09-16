@@ -1,0 +1,171 @@
+<html>
+<head>
+	<title>Test</title>
+</head>
+<body>
+<h1></h1>
+<script src="ascp2000.405.js"></script>
+<script src="de405.js"></script>
+<script src="novas.js"></script>
+<script src="iau2000a.js"></script>
+
+<form>
+
+<script>
+'use strict'
+
+const year = 2008;
+const month = 4;
+const day = 24;
+const hour = 10; //10.605
+const min = 36;
+const sec = 18;
+
+const ut1_utc = -0.387845;
+const leap_secs = 33;
+
+const de=new DE405();
+
+const observer={'latitude': 42.0, 'longitude': -70.0, 'height': 0.0};
+//const observer={'latitude': 42.0, 'longitude': -70.0, 'height': 0.0};
+const jd_utc=dateToJulianDate(year,month,day,hour,min,sec);
+const radec=getTopoCentric(jd_utc,observer,4);
+//const radec=getTopoCentric(jd_utc,observer,9);
+console.log(radec);
+console.log("RA :"+(radec[0]*15));
+console.log("RA :"+(radec[0]*15-293.78213));
+console.log("DEC:"+(radec[1]-(-21.65528)));
+
+const jd_ut1 = jd_utc + ut1_utc / 86400.0;
+const delta_t = 32.184 + leap_secs - ut1_utc;
+
+const zdaz=equ2hor(jd_ut1,delta_t,0.0,0.0,observer,radec[0],radec[1],0);
+console.log(zdaz);
+console.log(90-zdaz[0]);
+console.log("Alt:"+(90-zdaz[0]-25.9107));
+console.log("Az :"+(zdaz[1]-188.3168));
+
+function getTopoCentric(jd_utc,observer,bodyNumber){
+	const jd_tt = jd_utc + (leap_secs + 32.184) / 86400.0;
+	const jd_ut1 = jd_utc + ut1_utc / 86400.0;
+	const delta_t = 32.184 + leap_secs - ut1_utc;
+	const jd_tdb=tt2tdb(jd_tt);
+
+	const earth=getBodyPV(2,jd_tdb);
+
+	const geopv=geo_posvel(jd_tt,delta_t,observer);
+	const pvb=new Array();
+	for(let i=0;i<6;i++){
+		pvb[i]=geopv[i]+earth[i];
+	}
+	const pv1=getBodyPV(bodyNumber,jd_tdb);
+
+	const pos2=new Array();
+	for(let i=0;i<6;i++){
+		pos2[i]=pv1[i]-pvb[i];
+	}
+
+   let lighttime = Math.sqrt (pos2[0] * pos2[0] + pos2[1] * pos2[1] + pos2[2] * pos2[2]) / C_AUDAY;
+
+	let pos3=getBodyPV(bodyNumber,jd_tdb-lighttime);
+
+	for(let i=0;i<6;i++){
+		pos3[i]=pos3[i]-pvb[i];
+	}
+	lighttime = Math.sqrt (pos3[0] * pos3[0] + pos3[1] * pos3[1] + pos3[2] * pos3[2]) / C_AUDAY;
+
+	const temp=limb_angle(pos3,geopv);
+	const frlimb=temp[1];
+	let loc=1;
+	if (frlimb < 0.8) loc = 0;
+
+	const pos4=grav_def (jd_tdb,loc,pos3,pvb);
+
+	const vob=new Array();
+	vob[0]=pvb[3]; vob[1]=pvb[4]; vob[2]=pvb[5]; 
+	const pos5=aberration (pos4,vob,lighttime);
+
+    const pos6=frame_tie (pos5,1);
+    const pos7=precession (T0,pos6,jd_tdb);
+    const pos8=nutation (jd_tdb,0,pos7);
+
+	const radec=vector2radec(pos8);
+    radec[2]=lighttime*C_AUDAY;
+
+    return radec;
+}
+function INT(d){
+	if(d>0){
+		return Math.floor(d);
+	}
+	return Math.floor(d)-1;
+}
+
+function dateToJulianDate(year, month, day, hour, min, sec){
+	//From Meeus p61 (7.1)
+	/*
+	let year=date.getUTCFullYear();
+	let month=date.getUTCMonth()+1;
+	let day=date.getUTCDate();
+	let hour=date.getUTCHours();
+	let min=date.getUTCMinutes();
+	let sec=date.getUTCSeconds();
+*/
+	let isGregorian=true;
+	if(year<1582 || (year == 1582 && (month < 10 || (month==10 && day < 5)))){
+		isGregorian=false;
+	}
+
+	if (month < 3){
+		year = year - 1;
+		month = month + 12;
+	}
+
+	let b = 0;
+	if (isGregorian){
+	let a = INT(year / 100.0);
+		b = 2 - a + INT(a / 4.0);
+	}
+
+	let jd=INT(365.25 * (year + 4716)) + INT(30.6001 * (month + 1)) + day + b - 1524.5;
+	jd+=hour/24.0;
+	jd+=min/24.0/60.0;
+	jd+=sec/24.0/60.0/60.0;
+	return jd;
+}
+
+function getBodyPV(body,jd_tdb){
+	let b;
+	const AU_KM = 1.4959787069098932e+8;
+	
+	switch (body){
+		case 2: //Earth
+			b=de.getEarth(jd_tdb);
+			break;
+		case 9: //Moon
+			const e=de.getEarth(jd_tdb);
+			b=de.getAllPropertiesForSeries(body,jd_tdb);
+			for(let i=0;i<e.length;i++){
+				b[i]=b[i]+e[i];
+			}
+			break;
+		default:
+			b=de.getAllPropertiesForSeries(body,jd_tdb);
+			break;
+	}
+	for(let i=0;i<b.length;i++){
+		b[i]=b[i]/AU_KM;
+	}
+	return b;
+
+}
+
+
+
+
+</script>
+
+
+
+</body>
+</html>

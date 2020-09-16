@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Reduction Walkthrough: Computing a Planet's Alt/Az position</title>
+</head>
+<body>
+<script src="DE/ascp2000.405.js"></script>
+<script src="DE/de405.js"></script>
+<script src="reduce1-geocentric.js"></script>
+<script src="julian.js"></script>
+<script>
+'use strict';
+//Convert date to JD	
+//Convert UTC to TT
+//Get Earth position/velocity
+//Get planets' position/velocity
+//Convert to Geocentric
+
+const de=new DE405();
+const au=149597870691; // meters
+const c=299792458; // m/s
+
+const jd=gregorianDateToJulianDate(2020,3,1,0,0,0);
+Reduce1.reduce(4,jd);
+</script>
+
+</body>
+</html>
