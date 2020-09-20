@@ -1,4 +1,4 @@
-class Reduce4{
+class Reduce5{
 	//By Greg Miller (gmiller@gregmiller.net)
 	//Released as public domain
 
@@ -8,15 +8,41 @@ class Reduce4{
 		
 		const earth=this.getBodyPV(2,jd_tdb);
 		const target=this.getBodyLightAdjusted(earth,body,jd_tdb);
-		const observerGeocentric=this.getObserverGeocentricPosition(observer,jd_tdb);
+
+		const precessionMatrix=this.getPrecessionMatrix(jd_tdb);
 
 		const geocentricTarget=[target[0]-earth[0],target[1]-earth[1],target[2]-earth[2]];
+
+		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_tdb);
+		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(precessionMatrix));
+
 		const topocentricTarget=[geocentricTarget[0]-observerGeocentric[0],geocentricTarget[1]-observerGeocentric[1],geocentricTarget[2]-observerGeocentric[2]];
+
+		const radecj2000=this.xyzToRaDec(topocentricTarget);
+
+		const precessed=Vec.vecMatrixMul(topocentricTarget,precessionMatrix);
 		
-		const radec=this.xyzToRaDec(topocentricTarget);
+		const radec=this.xyzToRaDec(precessed);
 		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_tdb);
 		
-		return [radec[0],radec[1],radec[0],radec[1],altaz[0],altaz[1]];
+		return [radecj2000[0],radecj2000[1],radec[0],radec[1],altaz[0],altaz[1]];
+	}
+
+	static getPrecessionMatrix(jd_tbd){
+		//Fukushima-Williams IAU 2006
+		const t=(jd_tbd-2451545.5)/36525.0;
+
+		const gamma = (-0.052928 + 10.556378*t + 0.4932044*t*t - 0.00031238*t*t*t - 0.000002788*t*t*t*t + 0.0000000260*t*t*t*t*t) /60/60*Math.PI/180;
+		const phi = (+84381.412819 - 46.811016*t + 0.0511268*t*t + 0.00053289*t*t*t - 0.000000440*t*t*t*t - 0.0000000176*t*t*t*t*t) /60/60*Math.PI/180;
+		const psi = (-0.041775 + 5038.481484*t + 1.5584175*t*t - 0.00018522*t*t*t - 0.000026452*t*t*t*t - 0.0000000148*t*t*t*t*t) /60/60*Math.PI/180;
+		const eps = (+84381.406 - 46.836769*t - 0.0001831*t*t + 0.00200340*t*t*t - 0.000000576*t*t*t*t - 0.0000000434*t*t*t*t*t) /60/60*Math.PI/180;
+
+		const a=Vec.getZRotationMatrix(gamma);
+		const b=Vec.dot(Vec.getXRotationMatrix(phi),a);
+		const c=Vec.dot(Vec.getZRotationMatrix(-psi),b);
+		const d=Vec.dot(Vec.getXRotationMatrix(-eps),c);
+
+		return d;
 	}
 
 	static getLeapSeconds(jd){
