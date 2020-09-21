@@ -27,7 +27,7 @@ class Reduce6{
 		const nutated=Vec.vecMatrixMul(precessed,nutationMatrix);
 		
 		const radec=this.xyzToRaDec(nutated);
-		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_tdb);
+		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_utc);
 		
 		return [radecj2000[0],radecj2000[1],radec[0],radec[1],altaz[0],altaz[1]];
 	}
@@ -165,18 +165,16 @@ class Reduce6{
 		return [l,t,r];
 	}
 
-	//Input and output in radians
 	static raDecToAltAz(ra,dec,lat,lon,jd_ut){
-		//based on Meeus eq 13.5,13.6
+		//based on Explanatory supplement eq 7.16
 		const gmst=this.greenwichMeanSiderealTime(jd_ut);
 		const localSiderealTime=gmst+lon;
+		 
 		const H=localSiderealTime - ra;
-		let A=Math.atan2(Math.sin(H), Math.cos(H)*Math.sin(lat) - Math.tan(dec)*Math.cos(lat))
-		const h=Math.asin(Math.sin(lat)*Math.sin(dec) + Math.cos(lat)*Math.cos(dec)*Math.cos(H));
-		
-		A=(A+Math.PI)%(2*Math.PI);
-		
-		return [A,h];
+
+		const a=Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(H)*Math.cos(lat));
+		const az=Math.asin( (-(Math.cos(dec)*Math.sin(H)))/Math.cos(a)  );
+		return [Math.PI-az,a];
 	}
 
 	static greenwichMeanSiderealTime(jd_ut){
@@ -193,7 +191,6 @@ class Reduce6{
 		//gmst is in seconds, convert to radians, then mod 2pi radians to keep it in a 24hour range
 		gmst=(gmst/60/60*15*Math.PI/180.0)%(2.0*Math.PI);
 		if(gmst<0){gmst+=2*Math.PI;}
-
 
 		return gmst;
 	}

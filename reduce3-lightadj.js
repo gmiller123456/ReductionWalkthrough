@@ -76,18 +76,16 @@ class Reduce3{
 		return [l,t,r];
 	}
 
-	//Input and output in radians
 	static raDecToAltAz(ra,dec,lat,lon,jd_ut){
-		//based on Meeus eq 13.5,13.6
+		//based on Explanatory supplement eq 7.16
 		const gmst=this.greenwichMeanSiderealTime(jd_ut);
 		const localSiderealTime=gmst+lon;
+		 
 		const H=localSiderealTime - ra;
-		let A=Math.atan2(Math.sin(H), Math.cos(H)*Math.sin(lat) - Math.tan(dec)*Math.cos(lat))
-		const h=Math.asin(Math.sin(lat)*Math.sin(dec) + Math.cos(lat)*Math.cos(dec)*Math.cos(H));
-		
-		A=(A+Math.PI)%(2*Math.PI);
-		
-		return [A,h];
+
+		const a=Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(H)*Math.cos(lat));
+		const az=Math.asin( (-(Math.cos(dec)*Math.sin(H)))/Math.cos(a)  );
+		return [Math.PI-az,a];
 	}
 
 	static greenwichMeanSiderealTime(jd_ut){

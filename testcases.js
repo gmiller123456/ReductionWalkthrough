@@ -10,7 +10,7 @@ function runTests(className){
 	const jd=gregorianDateToJulianDate(2020,3,14,16,43,22);
 
 	//Test data from JPL Horizons, date chosen at random
-	/*          JDUT R.A.___(ICRF)___DEC   R.A._(a-appar)_DEC.   Azi_(a-appr)_Elev   L_Ap_Sid_Time   1-way_down_LT       TDB-UT*/
+	/*                    JDUT R.A.___(ICRF)___DEC   R.A._(a-appar)_DEC.   Azi_(a-appr)_Elev   L_Ap_Sid_Time   1-way_down_LT       TDB-UT*/
 	test(className,"Sun" , jd,[354.76044,  -2.26890, 355.01011,  -2.16102, 154.5692,  46.5898, 22.5222447106,    8.26968075,    69.185580]);
 	
 	test(className,"Mer" , jd,[330.91329, -11.42432, 331.17363, -11.32938, 188.5413,  40.0342, 22.5222447106,    6.39316934,    69.185580]);
