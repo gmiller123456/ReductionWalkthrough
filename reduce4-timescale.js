@@ -8,7 +8,7 @@ class Reduce4{
 		
 		const earth=this.getBodyPV(2,jd_tdb);
 		const target=this.getBodyLightAdjusted(earth,body,jd_tdb);
-		const observerGeocentric=this.getObserverGeocentricPosition(observer,jd_tdb);
+		const observerGeocentric=this.getObserverGeocentricPosition(observer,jd_utc);
 
 		const geocentricTarget=[target[0]-earth[0],target[1]-earth[1],target[2]-earth[2]];
 		const topocentricTarget=[geocentricTarget[0]-observerGeocentric[0],geocentricTarget[1]-observerGeocentric[1],geocentricTarget[2]-observerGeocentric[2]];

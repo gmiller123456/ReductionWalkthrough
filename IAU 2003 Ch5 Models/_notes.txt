@@ -1,0 +1,5 @@
+From:
+https://www.usno.navy.mil/USNO/earth-orientation/eo-info/general/conv2003/ch5
+
+PDFs of all chapters:
+https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn32.html

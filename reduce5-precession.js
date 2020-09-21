@@ -13,7 +13,7 @@ class Reduce5{
 
 		const geocentricTarget=[target[0]-earth[0],target[1]-earth[1],target[2]-earth[2]];
 
-		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_tdb);
+		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_utc);
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(precessionMatrix));
 
 		const topocentricTarget=[geocentricTarget[0]-observerGeocentric[0],geocentricTarget[1]-observerGeocentric[1],geocentricTarget[2]-observerGeocentric[2]];
@@ -28,9 +28,9 @@ class Reduce5{
 		return [radecj2000[0],radecj2000[1],radec[0],radec[1],altaz[0],altaz[1]];
 	}
 
-	static getPrecessionMatrix(jd_tbd){
+	static getPrecessionMatrix(jd_tdb){
 		//Fukushima-Williams IAU 2006
-		const t=(jd_tbd-2451545.5)/36525.0;
+		const t=(jd_tdb-2451545.5)/36525.0;
 
 		const gamma = (-0.052928 + 10.556378*t + 0.4932044*t*t - 0.00031238*t*t*t - 0.000002788*t*t*t*t + 0.0000000260*t*t*t*t*t) /60/60*Math.PI/180;
 		const phi = (+84381.412819 - 46.811016*t + 0.0511268*t*t + 0.00053289*t*t*t - 0.000000440*t*t*t*t - 0.0000000176*t*t*t*t*t) /60/60*Math.PI/180;
