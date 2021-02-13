@@ -342,6 +342,9 @@ function vector2radec (pos)
 function aberration (pos, ve, lighttime)
 {
    var p1mag, vemag, beta, dot, cosd, gammai, p, q, r;
+   console.log("Abb:",pos);
+   console.log("Abb:",ve);
+
 
    if (lighttime == 0.0)
    {

@@ -12,24 +12,36 @@ class Reduce6{
 
 		const precessionMatrix=this.getPrecessionMatrix(jd_tdb);
 		const nutationMatrix=this.getNutationMatrix(jd_tdb);
+		const biasMatrix=this.getFrameBiasMatrix();
 
 		const geocentricTarget=[target[0]-earth[0],target[1]-earth[1],target[2]-earth[2]];
 
 		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_utc);
-		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(precessionMatrix));
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(nutationMatrix));
+		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(precessionMatrix));
+		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(biasMatrix));
 
 		const topocentricTarget=[geocentricTarget[0]-observerGeocentric[0],geocentricTarget[1]-observerGeocentric[1],geocentricTarget[2]-observerGeocentric[2]];
 
 		const radecj2000=this.xyzToRaDec(topocentricTarget);
 
-		const precessed=Vec.vecMatrixMul(topocentricTarget,precessionMatrix);
+		const biased=Vec.vecMatrixMul(topocentricTarget,biasMatrix);
+		const precessed=Vec.vecMatrixMul(biased,precessionMatrix);
 		const nutated=Vec.vecMatrixMul(precessed,nutationMatrix);
 		
 		const radec=this.xyzToRaDec(nutated);
 		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_utc);
 		
 		return [radecj2000[0],radecj2000[1],radec[0],radec[1],altaz[0],altaz[1]];
+	}
+
+	static getFrameBiasMatrix(){
+		const b=[
+			[.99999999999999425, -7.1e-8, 8.056e-8],
+			[7.1e-8, .99999999999999695, 3.306e-8],
+			[-8.056e-8, 3.306e-8, .999999999999996208]
+		];
+		return b;
 	}
 
 	static getPrecessionMatrix(jd_tdb){
@@ -119,17 +131,17 @@ class Reduce6{
 	}
 
 	static getObserverGeocentricPosition(observer,jd_ut){
-		const itrf=this.convertGeodedicLatLonToITRFXYZ(observer[0],observer[1],observer[2]);
+		const ecef=this.convertGeodedicLatLonToECEFXYZ(observer[0],observer[1],observer[2]);
 		const gmst=this.greenwichMeanSiderealTime(jd_ut);
 
 		const m=Vec.getZRotationMatrix(-gmst);
-		const gcrs=Vec.vecMatrixMul(itrf,m);
+		const gcrs=Vec.vecMatrixMul(ecef,m);
 
 		return gcrs;
 	}
 
-	//Convert Geodedic Lat Lon to geocentric XYZ position vector in ITRF coordinates
-	static convertGeodedicLatLonToITRFXYZ(lat,lon,height){
+	//Convert Geodedic Lat Lon to geocentric XYZ position vector in ECEF coordinates
+	static convertGeodedicLatLonToECEFXYZ(lat,lon,height){
 		//Algorithm from Explanatory Supplement to the Astronomical Almanac 3rd ed. P294
 		const a=6378136.6/au;
 		const f=1/298.25642;
