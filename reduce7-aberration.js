@@ -25,7 +25,6 @@ class Reduce7{
 		//const observerBarycentric=Vec.add(observerGeocentric,earth);
 
 		const topocentricTarget=Vec.sub(geocentricTarget,observerGeocentric);
-		console.log(topocentricTarget);
 
 		const radecj2000=this.xyzToRaDec(topocentricTarget);
 
