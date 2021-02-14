@@ -1767,8 +1767,10 @@ short int place (double jd_tt, object *cel_object,
    Get position of body wrt observer, and true (Euclidian) distance.
 */
 
+
       bary2obs (pos1,pob, pos2,&t_light0);
       output->dis = t_light0 * C_AUDAY;
+
 
 /*
    Get position of body wrt observer, antedated for light-time.
@@ -1818,6 +1820,11 @@ short int place (double jd_tt, object *cel_object,
 
       if ((error = grav_def (jd_tdb,loc,accuracy,pos3,pob, pos4)) != 0)
          return (error += 70);
+
+for(int x=0;x<3;x++){
+   printf("%15.12f\r\n",pos4[x]);
+}
+
 
       aberration (pos4,vob,t_light, pos5);
    }
@@ -4126,7 +4133,6 @@ void terra (on_surface *location, double st,
       pos[j] /= AU_KM;
       vel[j] /= AU_KM;
       vel[j] *= 86400.0;
-printf("%15.12f\r\n",pos[j]);
    }
 
    return;
