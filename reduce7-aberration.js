@@ -185,7 +185,7 @@ class Reduce7{
 		const a=6378136.6/au;
 		const f=1/298.25642;
 
-		const C=Math.sqrt(((Math.cos(lat)*Math.cos(lat)) + (1.0-f)*(1.0-f) * (Math.sin(lat)*Math.sin(lat))));
+		const C=1/Math.sqrt(((Math.cos(lat)*Math.cos(lat)) + (1.0-f)*(1.0-f) * (Math.sin(lat)*Math.sin(lat))));
 
 		const S=(1-f)*(1-f)*C;
 		

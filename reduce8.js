@@ -1,38 +1,74 @@
-class Reduce6{
+class Reduce8{
 	//By Greg Miller (gmiller@gregmiller.net)
 	//Released as public domain
 
 	static reduce(body,jd_utc,observer){
 		const jd_tt=this.convertUTCtoTT(jd_utc);
-		const jd_tdb=jd_tt;
+		const jd_tdb=2458923.197583166417;
+        ;
+		const jd_ut1=jd_utc + -0.2181652/86400.0;
 
 		
 		const earth=this.getBodyPV(2,jd_tdb);
 		const target=this.getBodyLightAdjusted(earth,body,jd_tdb);
 
-		const precessionMatrix=this.getPrecessionMatrix(jd_tdb);
+        const precessionMatrix=this.getPrecessionMatrix(jd_tdb);
 		const nutationMatrix=this.getNutationMatrix(jd_tdb);
 		const biasMatrix=this.getFrameBiasMatrix();
 
-		const geocentricTarget=[target[0]-earth[0],target[1]-earth[1],target[2]-earth[2]];
+		const geocentricTarget=Vec.sub(target,earth);
 
-		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_utc);
+		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_ut1);
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(biasMatrix));
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(nutationMatrix));
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(precessionMatrix));
 
-		const topocentricTarget=[geocentricTarget[0]-observerGeocentric[0],geocentricTarget[1]-observerGeocentric[1],geocentricTarget[2]-observerGeocentric[2]];
-
+        const topocentricTarget=Vec.sub(geocentricTarget,observerGeocentric);
 		const radecj2000=this.xyzToRaDec(topocentricTarget);
 
-		const biased=Vec.vecMatrixMul(topocentricTarget,biasMatrix);
-		const precessed=Vec.vecMatrixMul(biased,precessionMatrix);
+		const aberrated=this.aberration(topocentricTarget,earth);
+
+		const precessed=Vec.vecMatrixMul(aberrated,precessionMatrix);
 		const nutated=Vec.vecMatrixMul(precessed,nutationMatrix);
-		
-		const radec=this.xyzToRaDec(nutated);
-		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_utc);
+		const biased=Vec.vecMatrixMul(nutated,biasMatrix);
+
+		const radec=this.xyzToRaDec(biased);
+		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_ut1);
 		
 		return [radecj2000[0],radecj2000[1],radec[0],radec[1],altaz[0],altaz[1]];
+	}
+
+	static aberration(pos,earthPV){
+		//"MEAN AND APPARENT PLACE COMPUTATIONS IN THE NEW IAU SYSTEM. III. APPARENT, TOPOCENTRIC, AND ASTROMETRIC PLACES OF PLANETS AND STARS"
+		//G. H. Kaplan, J. A. Hughes, P. K. Seidelmann, and C. A. Smith
+		//U. S. Naval Observatory, Washington, DC 20392
+
+		//http://articles.adsabs.harvard.edu/pdf/1989AJ.....97.1197K
+
+		const AU=149597870691; // meters
+		const C_AUDAY = 173.1446326846693; //Speed of light in AU per Day
+
+		const u4=pos;
+		const dE=new Array();
+		dE[0]=earthPV[3];
+		dE[1]=earthPV[4];
+		dE[2]=earthPV[5];
+
+		//Eq 16
+		const t=Vec.magnitude(u4) / C_AUDAY;
+		const B=Vec.magnitude(dE) / C_AUDAY;
+		const cosD=Vec.vecDot(u4,dE)/(Vec.magnitude(u4)*Vec.magnitude(dE));
+		const y=Math.sqrt(1-B*B);
+		const f1=B*cosD;
+		const f2=(1+f1/(1+y))*t;
+
+		//Eq 17
+		const u5=new Array();
+		u5[0]=(y*u4[0] + f2*dE[0])/(1+f1);
+		u5[1]=(y*u4[1] + f2*dE[1])/(1+f1);
+		u5[2]=(y*u4[2] + f2*dE[2])/(1+f1);
+
+		return u5;
 	}
 
 	static getFrameBiasMatrix(){
@@ -118,15 +154,15 @@ class Reduce6{
 	}
 
 	static getBodyLightAdjusted(origin,body,jd){
-		
 		let jd_light=jd;
 		let b;
 		for(let i=0;i<3;i++){
-			b=this.getBodyPV(body,jd_light);
+            b=this.getBodyPV(body,jd_light);
 			const r=Math.sqrt((origin[0]-b[0])*(origin[0]-b[0])+(origin[1]-b[1])*(origin[1]-b[1])+(origin[2]-b[2])*(origin[2]-b[2]));
 			const lightTime=r/(c/au*60*60*24);
 			jd_light=jd-lightTime;
 		}
+
 		return b;
 	}
 
@@ -134,7 +170,7 @@ class Reduce6{
 		const ecef=this.convertGeodedicLatLonToECEFXYZ(observer[0],observer[1],observer[2]);
 		const gast=nutation.iauGst00b(0,jd_ut);
 
-		const m=Vec.getZRotationMatrix(-gast);
+        const m=Vec.getZRotationMatrix(-gast);
 		const gcrs=Vec.vecMatrixMul(ecef,m);
 
 		return gcrs;
@@ -144,12 +180,11 @@ class Reduce6{
 	static convertGeodedicLatLonToECEFXYZ(lat,lon,height){
 		//Algorithm from Explanatory Supplement to the Astronomical Almanac 3rd ed. P294
 		const a=6378136.6/au;
-		const f=1/298.25642;
+        const f=1/298.25642;
 
 		const C=1/Math.sqrt(((Math.cos(lat)*Math.cos(lat)) + (1.0-f)*(1.0-f) * (Math.sin(lat)*Math.sin(lat))));
 
 		const S=(1-f)*(1-f)*C;
-		
 		const h=height;
 
 		let r=new Array();
@@ -179,8 +214,10 @@ class Reduce6{
 
 	static raDecToAltAz(ra,dec,lat,lon,jd_ut){
 		//based on Explanatory supplement eq 7.16
+		//const gmst=this.greenwichMeanSiderealTime(jd_ut);
 		const gast=nutation.iauGst00b(0,jd_ut);
 		const localSiderealTime=gast+lon;
+		 
 		const H=localSiderealTime - ra;
 
 		const a=Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(H)*Math.cos(lat));
@@ -245,4 +282,5 @@ class Reduce6{
 
 		return c;
 	}
+
 }

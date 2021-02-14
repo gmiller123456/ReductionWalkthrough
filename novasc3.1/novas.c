@@ -1695,6 +1695,7 @@ short int place (double jd_tt, object *cel_object,
          != 0)
          return (error += 40);
 
+
       loc = 1;
    }
     else
@@ -1820,10 +1821,6 @@ short int place (double jd_tt, object *cel_object,
 
       if ((error = grav_def (jd_tdb,loc,accuracy,pos3,pob, pos4)) != 0)
          return (error += 70);
-
-for(int x=0;x<3;x++){
-   printf("%15.12f\r\n",pos4[x]);
-}
 
 
       aberration (pos4,vob,t_light, pos5);
@@ -4096,6 +4093,7 @@ void terra (on_surface *location, double st,
    cosphi = cos (phi);
    c = 1.0 / sqrt (cosphi * cosphi + df2 * sinphi * sinphi);
    s = df2 * c;
+printf("C=%15.12f\r\ns=%15.12f\r\n",c,s);
    ht_km = location->height / 1000.0;
    ach = erad_km * c + ht_km;
    ash = erad_km * s + ht_km;
