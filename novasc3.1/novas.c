@@ -4126,6 +4126,7 @@ void terra (on_surface *location, double st,
       pos[j] /= AU_KM;
       vel[j] /= AU_KM;
       vel[j] *= 86400.0;
+printf("%15.12f\r\n",pos[j]);
    }
 
    return;
@@ -5975,15 +5976,6 @@ void aberration (double *pos, double *ve, double lighttime,
 {
    double p1mag, vemag, beta, dot, cosd, gammai, p, q, r;
 
-printf("Pre abberation\r\n");
-for(int x=0;x<3;x++){
-   printf("%15.12f\r\n",pos[x]);
-}
-printf("ve\r\n");
-for(int x=0;x<3;x++){
-   printf("%15.12f\r\n",ve[x]);
-}
-
    if (lighttime == 0.0)
    {
       p1mag = sqrt (pos[0] * pos[0] + pos[1] * pos[1] + pos[2] *
@@ -6003,18 +5995,9 @@ for(int x=0;x<3;x++){
    q = (1.0 + p / (1.0 + gammai)) * lighttime;
    r = 1.0 + p;
 
-printf("c %15.12f   p1mag %15.12f    B %15.12f   cosD %15.12f\r\ngammai %15.12f     p %15.12f  q %15.12f   r %15.12f\r\nlight %15.12f\r\n",C_AUDAY,p1mag,beta,cosd, gammai, p,q,r,lighttime);
-
-
    pos2[0] = (gammai * pos[0] + q * ve[0]) / r;
    pos2[1] = (gammai * pos[1] + q * ve[1]) / r;
    pos2[2] = (gammai * pos[2] + q * ve[2]) / r;
-
-printf("Pos abberation\r\n");
-for(int x=0;x<3;x++){
-   printf("%15.12f\r\n",pos2[x]);
-}
-
 
    return;
 }

@@ -14,14 +14,16 @@ class Reduce7{
 		const nutationMatrix=this.getNutationMatrix(jd_tdb);
 		const biasMatrix=this.getFrameBiasMatrix();
 
-		const geocentricTarget=[target[0]-earth[0],target[1]-earth[1],target[2]-earth[2]];
+		const geocentricTarget=Vec.sub(target,earth);
 
 		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_utc);
+console.log(observerGeocentric);
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(nutationMatrix));
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(precessionMatrix));
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(biasMatrix));
 
-		//const topocentricTarget=[geocentricTarget[0]-observerGeocentric[0],geocentricTarget[1]-observerGeocentric[1],geocentricTarget[2]-observerGeocentric[2]];
+//		const observerBarycentric=Vec.add(observerGeocentric,earth);
+
 		const topocentricTarget=Vec.sub(geocentricTarget,observerGeocentric);
 
 		const radecj2000=this.xyzToRaDec(topocentricTarget);
@@ -31,7 +33,6 @@ class Reduce7{
 		const precessed=Vec.vecMatrixMul(aberrated,precessionMatrix);
 		const nutated=Vec.vecMatrixMul(precessed,nutationMatrix);
 		const biased=Vec.vecMatrixMul(nutated,biasMatrix);
-
 
 		const radec=this.xyzToRaDec(biased);
 		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_utc);
@@ -47,7 +48,7 @@ class Reduce7{
 		//http://articles.adsabs.harvard.edu/pdf/1989AJ.....97.1197K
 
 		const AU=149597870691; // meters
-		const C=299792458/AU*60*60*24; // speed of light in au/day
+		const C_AUDAY = 173.1446326846693; //Speed of light in AU per Day
 
 		const u4=pos;
 		const dE=new Array();
@@ -55,10 +56,8 @@ class Reduce7{
 		dE[1]=earthPV[4];
 		dE[2]=earthPV[5];
 
-		const C_AUDAY = 173.1446326846693;
-
 		//Eq 16
-		const t=Vec.magnitude(u4) / C;
+		const t=Vec.magnitude(u4) / C_AUDAY;
 		const B=Vec.magnitude(dE) / C_AUDAY;
 		const cosD=Vec.vecDot(u4,dE)/(Vec.magnitude(u4)*Vec.magnitude(dE));
 		const y=Math.sqrt(1-B*B);
@@ -72,7 +71,6 @@ class Reduce7{
 		u5[2]=(y*u4[2] + f2*dE[2])/(1+f1);
 
 		return u5;
-
 	}
 
 	static getFrameBiasMatrix(){
@@ -167,14 +165,15 @@ class Reduce7{
 			const lightTime=r/(c/au*60*60*24);
 			jd_light=jd-lightTime;
 		}
+
 		return b;
 	}
 
 	static getObserverGeocentricPosition(observer,jd_ut){
 		const ecef=this.convertGeodedicLatLonToECEFXYZ(observer[0],observer[1],observer[2]);
-		const gmst=this.greenwichMeanSiderealTime(jd_ut);
+		const gast=EquationOfTheEquinoxes.iauGst00b(0,jd_ut);
 
-		const m=Vec.getZRotationMatrix(-gmst);
+		const m=Vec.getZRotationMatrix(-gast);
 		const gcrs=Vec.vecMatrixMul(ecef,m);
 
 		return gcrs;
@@ -219,8 +218,9 @@ class Reduce7{
 
 	static raDecToAltAz(ra,dec,lat,lon,jd_ut){
 		//based on Explanatory supplement eq 7.16
-		const gmst=this.greenwichMeanSiderealTime(jd_ut);
-		const localSiderealTime=gmst+lon;
+		//const gmst=this.greenwichMeanSiderealTime(jd_ut);
+		const gast=EquationOfTheEquinoxes.iauGst00b(0,jd_ut);
+		const localSiderealTime=gast+lon;
 		 
 		const H=localSiderealTime - ra;
 

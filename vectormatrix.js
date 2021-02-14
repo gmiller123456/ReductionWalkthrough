@@ -34,14 +34,17 @@ class Vec{
     //Subtracts two arrays (vectors), a-b
     static sub(a, b){
         let t = new Array();
-        t[0] = a[0] - b[0];
-        t[1] = a[1] - b[1];
-        t[2] = a[2] - b[2];
+        for(let i=0;i<a.length && i<b.length;i++){
+            t[i]=a[i]-b[i];
+        }
+        return t;
+    }
 
-        if(a.length>3 && b.length>3){
-            t[3] = a[3] - b[3];
-            t[4] = a[4] - b[4];
-            t[5] = a[5] - b[5];
+    //Adds two arrays (vectors), a+b
+    static add(a, b){
+        let t = new Array();
+        for(let i=0;i<a.length && i<b.length;i++){
+            t[i]=a[i]+b[i];
         }
         return t;
     }
