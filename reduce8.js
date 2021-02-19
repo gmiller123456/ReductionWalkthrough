@@ -4,8 +4,9 @@ class Reduce8{
 
 	static reduce(body,jd_utc,observer){
 		const jd_tt=this.convertUTCtoTT(jd_utc);
-		const jd_tdb=2458923.197583166417;
-        ;
+		const jd_tdb=jd_tt;
+		//const jd_tdb=2458923.197583166417;
+        
 		const jd_ut1=jd_utc + -0.2181652/86400.0;
 
 		

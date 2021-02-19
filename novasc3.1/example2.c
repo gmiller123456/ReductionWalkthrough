@@ -31,7 +31,7 @@ int main(int argc, char *args[]){
 
     short int de_num = 0;
     double jd_beg, jd_end;
-    ephem_open("JPLEPH", &jd_beg, &jd_end, &de_num);
+    ephem_open("JPLEPH.421", &jd_beg, &jd_end, &de_num);
 
     test(jd_utc,11,&geo_loc,leap_secs,ut1_utc);
     //test(jd_utc, 4,&geo_loc,leap_secs,ut1_utc);

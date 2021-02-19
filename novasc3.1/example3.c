@@ -7,6 +7,8 @@ void test(double jd_utc, short body, on_surface* geo_loc, short int leap_secs, d
     double jd_tt = jd_utc + ((double)leap_secs + 32.184) / 86400.0;
     double jd_ut1 = jd_utc + ut1_utc / 86400.0;
     double delta_t = 32.184 + leap_secs - ut1_utc;
+    //delta_t=69.402165200000;
+    printf("Delta T: %15.12f\r\n",delta_t);
 
     in_space dummy;
     observer location;
@@ -17,7 +19,7 @@ void test(double jd_utc, short body, on_surface* geo_loc, short int leap_secs, d
     make_object(0, body, "", &dummy_star, &bodyObject);
     make_observer (1,geo_loc,&dummy, &location);
 
-    short int coord_sys = 3;        /* True equator and equinox of date */
+    short int coord_sys = 1;        /* True equator and equinox of date */
 
     sky_pos radec;
     place (jd_tt,&bodyObject,&location,delta_t,coord_sys,0, &radec);
@@ -38,12 +40,12 @@ int main(int argc, char *args[]){
 
     short int de_num = 0;
     double jd_beg, jd_end;
-    ephem_open("JPLEPH", &jd_beg, &jd_end, &de_num);
+    ephem_open("JPLEPH.421", &jd_beg, &jd_end, &de_num);
 
     //test(jd_utc,1,&geo_loc,leap_secs,ut1_utc);
     printf("\r\n");
     test(jd_utc,11,&geo_loc,leap_secs,ut1_utc);
-    //test(jd_utc, 4,&geo_loc,leap_secs,ut1_utc);
+    test(jd_utc, 4,&geo_loc,leap_secs,ut1_utc);
 
     ephem_close();
 }

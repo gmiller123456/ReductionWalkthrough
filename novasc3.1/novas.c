@@ -4093,7 +4093,6 @@ void terra (on_surface *location, double st,
    cosphi = cos (phi);
    c = 1.0 / sqrt (cosphi * cosphi + df2 * sinphi * sinphi);
    s = df2 * c;
-printf("C=%15.12f\r\ns=%15.12f\r\n",c,s);
    ht_km = location->height / 1000.0;
    ach = erad_km * c + ht_km;
    ash = erad_km * s + ht_km;
