@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Reduction Walkthrough: Computing a Planet's Alt/Az position</title>
+</head>
+<body>
+<script src="DE/ascp2020.405.js"></script>
+<script src="DE/de405.js"></script>
+<script src="reduce07-aberration.js"></script>
+<script src="julian.js"></script>
+<script src="testcases.js"></script>
+<script src="vectormatrix.js"></script>
+<script src="nutation.js"></script>
+
+<table id="resultsTable1" border=1 cellspacing=0>
+	<Tr><th>Planet</th><th>RA J2000</th><th>DEC J2000</th><th>RA App</th><th>DEC App</th><th>Az App</th><th>El App</th></Tr>
+</table>
+
+
+<script>
+'use strict';
+
+runTests(Reduce7);
+</script>
+
+</body>
+
+</html>

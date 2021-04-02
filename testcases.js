@@ -3,7 +3,7 @@ const au=149597870691; // meters
 const c=299792458; // m/s
 const toRad=Math.PI/180;  //Multiply by this to convert degrees to radians
 
-const observer=[38.2464000*toRad,-85.7636*toRad,0]; //Louisville, Kentucky -85° 45' 48.96" 
+const observer=[38.2463888888*toRad,-85.763611111111*toRad,0]; //Louisville, Kentucky -85° 45' 49"  38 14' 47"
 
 function runTests(className){
 	//2458923.196782407 Horizons value for 2020-03-14 16:43:22
