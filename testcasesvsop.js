@@ -45,19 +45,27 @@ function displayResult(tableName,name,r,t){
 	const row1=table.insertRow(rows);
 	const row2=table.insertRow(rows+1);
 	const row3=table.insertRow(rows+2);
-	table.insertRow(rows+3).insertCell(0).innerHTML="&nbsp;";
+	const row4=table.insertRow(rows+3);
+	table.insertRow(rows+4).insertCell(0).innerHTML="&nbsp;";
 
 	row1.insertCell(0).innerHTML=name+" Horizons";
 	row2.insertCell(0).innerHTML=name+" Computed";
 	row3.insertCell(0).innerHTML=name+" Error";
+	row4.insertCell(0).innerHTML=name+" Error Arcsec";
 
 	for(let i=1;i<7;i++){
 		const cell1=row1.insertCell(i);
 		const cell2=row2.insertCell(i);
 		const cell3=row3.insertCell(i);
+		const cell4=row4.insertCell(i);
 
-		cell1.innerHTML=t[i-1];
-		cell2.innerHTML=r[i-1]/toRad;
-		cell3.innerHTML=Math.abs(t[i-1]-r[i-1]/toRad)*60*60+"\"";
+        cell1.innerHTML=t[i-1];
+        let v=r[i-1]/toRad;
+        if(i>4) v=Math.round(v*10000)/10000;
+        cell2.innerHTML=v;
+        let e=t[i-1]-r[i-1]/toRad;
+        if(i>4) e=Math.round((t[i-1]-r[i-1]/toRad)*10000)/10000;
+		cell3.innerHTML=Math.abs(e)+"";
+		cell4.innerHTML=Math.abs(e)*60*60+"\"";
 	}
 }

@@ -1,0 +1,69 @@
+<html>
+<head>
+<title></title>
+</head>    
+<body>
+<div id=output></div>
+
+<script src="nutationgenerator.js"></script>
+<script>
+
+generate();
+
+/*
+Fundamental Arguments p46 eq 5.17, 5.18, 5.19
+
+φ1 = 908103.259872 + 538101628.688982 T
+φ2 = 655127.283060 + 210664136.433548 T
+φ3 = 361679.244588 + 129597742.283429 T
+φ4 = 1279558.798488 + 68905077.493988 T
+φ5 = 123665.467464 + 10925660.377991 T
+φ6 = 180278.799480 + 4399609.855732 T
+φ7 = 1130598.018396 + 1542481.193933 T
+φ8 = 1095655.195728 + 786550.320744 T
+
+φ9 = 5028.8200 T + 1.112022 T2
+
+φ10 = l = 485868.249036 + 1717915923.2178 T + 31.8792 T2 + 0.051635 T3 − 0.00024470 T4
+φ11 = l′ = 1287104.79305 + 129596581.0481 T − 0.5532 T2 + 0.000136 T3 − 0.00001149 T4
+φ12 = F = 335779.526232 + 1739527262.8478 T − 12.7512 T2 − 0.001037 T3 + 0.00000417 T4
+φ13 = D = 1072260.70369 + 1602961601.2090 T − 6.3706 T2 + 0.006593 T3 − 0.00003169 T4
+φ14 = Ω = 450160.398036 − 6962890.5431 T + 7.4722 T2 + 0.007702 T3 − 0.00005939 T4
+(5.19)
+*/
+
+function generate(){
+    //for(let i=0;i<nut2000a.length;i++){
+
+    let t="";
+    for(let i=76;i>=0;i--){
+        const l=nut2000a[i];
+
+        const M10=l[10];
+        const M11=l[11];
+        const M12=l[12];
+        const M13=l[13];
+        const M14=l[14];
+
+        const AA=Math.round(l[15]*10000000);
+        const BB=Math.round(l[16]*10000000);
+        const CC=Math.round(l[17]*10000000);
+        const DD=Math.round(l[18]*10000000);
+        const EE=Math.round(l[19]*10000000);
+        const FF=Math.round(l[20]*10000000);
+
+        const arg=`arg=${M10}*L + ${M11}*Lp + ${M12}*F + ${M13}*D + ${M14}*Om;`;
+        const dp=`dp+=(${AA} + ${BB}*T)*Math.sin(arg) + ${CC}*Math.cos(arg);`
+        const de=`de+=(${DD} + ${EE}*T)*Math.cos(arg) + ${FF}*Math.sin(arg);`
+
+        t+=arg+"\r\n";
+        t+=dp+"\r\n";
+        t+=de+"\r\n";
+
+    }
+    document.getElementById("output").innerText=t;
+}
+
+</script>
+</body>
+</html>

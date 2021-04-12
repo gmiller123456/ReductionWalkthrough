@@ -1,30 +1,23 @@
-class Reduce11{
+class Reduce12{
 	//By Greg Miller (gmiller@gregmiller.net)
 	//Released as public domain
 
 	static reduce(body,jd_utc,observer){
 		const jd_tt=this.convertUTCtoTT(jd_utc);
         const jd_tdb=jd_tt;
-        //const jd_tdb=2458923.197583166417;
-        
-		const jd_ut1=jd_utc + -0.2181652/86400.0;  //TODO: UT1-UTC offset
-
-/*
-Polar motion
-ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/finals2000A.all
-*/
 		
+		const ut1_utc=0.0/86400.0;  //TODO: UT1-UTC offset
+		const jd_ut1=jd_utc + ut1_utc;
+
 		const earth=this.getBodyPV(2,jd_tdb);
 		const target=this.getBodyLightAdjusted(earth,body,jd_tdb);
 
         const precessionMatrix=this.getPrecessionMatrix(jd_tdb);
 		const nutationMatrix=this.getNutationMatrix(jd_tdb);
-		const biasMatrix=this.getFrameBiasMatrix();
 
         const geocentricTarget=Vec.sub(target,earth);
 
 		let observerGeocentric=this.getObserverGeocentricPosition(observer,jd_ut1);
-		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(biasMatrix));
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(nutationMatrix));
 		observerGeocentric=Vec.vecMatrixMul(observerGeocentric,Vec.transpose(precessionMatrix));
 
@@ -35,9 +28,8 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 
 		const precessed=Vec.vecMatrixMul(aberrated,precessionMatrix);
 		const nutated=Vec.vecMatrixMul(precessed,nutationMatrix);
-		const biased=Vec.vecMatrixMul(nutated,biasMatrix);
 
-		const radec=this.xyzToRaDec(biased);
+		const radec=this.xyzToRaDec(nutated);
 		const altaz=this.raDecToAltAz(radec[0],radec[1],observer[0],observer[1],jd_ut1);
 		
 		return [radecj2000[0],radecj2000[1],radec[0],radec[1],altaz[0],altaz[1]];
@@ -50,7 +42,6 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 
 		//http://articles.adsabs.harvard.edu/pdf/1989AJ.....97.1197K
 
-		const AU=149597870691; // meters
 		const C_AUDAY = 173.1446326846693; //Speed of light in AU per Day
 
 		const u4=pos;
@@ -74,15 +65,6 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 		u5[2]=(y*u4[2] + f2*dE[2])/(1+f1);
 
 		return u5;
-	}
-
-	static getFrameBiasMatrix(){
-		const b=[
-			[.99999999999999425, -7.1e-8, 8.056e-8],
-			[7.1e-8, .99999999999999695, 3.306e-8],
-			[-8.056e-8, 3.306e-8, .999999999999996208]
-		];
-		return b;
 	}
 
 	static getPrecessionMatrix(jd_tdb){
@@ -221,7 +203,7 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 		//const gmst=this.greenwichMeanSiderealTime(jd_ut);
 		const gast=nutation.iauGst00b(0,jd_ut);
 		const localSiderealTime=gast+lon;
-		 
+
 		const H=localSiderealTime - ra;
 
 		const a=Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(H)*Math.cos(lat));
@@ -229,38 +211,21 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 		return [Math.PI-az,a];
 	}
 
-	static greenwichMeanSiderealTime(jd_ut){
-		//"The New Defintion of Universal Time" S. Aoki et al --- Equations 13 and 19
-		//http://adsabs.harvard.edu/full/1982A%26A...105..359A
-		const du=Math.floor(jd_ut-2451545)-.5;
-		const frac=(jd_ut-2451545-du)*60*60*24;
-		const tu=du/36525.0;
-
-		let gmst=24110.54841 + 8640184.812866*tu + 0.093104*tu*tu - 6.210e-6*tu*tu*tu; //eq 13
-		gmst+=frac * 1.002737909350795; //eq 19 simplified
-		//gmst+=frac* 1.002737909350795 + 5.900610e-11*T - 5.910e-15*T*T; //eq 19 Aoki et al.
-
-		//gmst is in seconds, convert to radians, then mod 2pi radians to keep it in a 24hour range
-		gmst=(gmst/60/60*15*Math.PI/180.0)%(2.0*Math.PI);
-		if(gmst<0){gmst+=2*Math.PI;}
-
-		return gmst;
-	}
-
 	static getBodyPV(body,jd_tdb){
         let b;
         let v;
-		const AU_KM = 1.4959787069098932e+8;
         const t= (jd_tdb - 2451545.0) / 365250.0;
 		
 		switch (body){
             case 0:
                 b=vsop87a_full.getMercury(t);
-                v=vsop87a_full_velocities.getMercury(t);
+                //v=vsop87a_full_velocities.getMercury(t);
+                v=[0,0,0];
                 break;
             case 1:
                 b=vsop87a_full.getVenus(t);
-                v=vsop87a_full_velocities.getVenus(t);
+                //v=vsop87a_full_velocities.getVenus(t);
+                v=[0,0,0];
                 break;
             case 2: //Earth
 				b=vsop87a_full.getEarth(t);
@@ -268,23 +233,28 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 				break;
             case 3:
                 b=vsop87a_full.getMars(t);
-                v=vsop87a_full_velocities.getMars(t);
+                //v=vsop87a_full_velocities.getMars(t);
+                v=[0,0,0];
                 break;
             case 4:
                 b=vsop87a_full.getJupiter(t);
-                v=vsop87a_full_velocities.getJupiter(t);
+                //v=vsop87a_full_velocities.getJupiter(t);
+                v=[0,0,0];
                 break;
             case 5:
                 b=vsop87a_full.getSaturn(t);
-                v=vsop87a_full_velocities.getSaturn(t);
+                //v=vsop87a_full_velocities.getSaturn(t);
+                v=[0,0,0];
                 break;
             case 6:
                 b=vsop87a_full.getUranus(t);
-                v=vsop87a_full_velocities.getUranus(t);
+                //v=vsop87a_full_velocities.getUranus(t);
+                v=[0,0,0];
                 break;
             case 7:
                 b=vsop87a_full.getNeptune(t);
-                v=vsop87a_full_velocities.getNeptune(t);
+                //v=vsop87a_full_velocities.getNeptune(t);
+                v=[0,0,0];
                 break;
             case 8:
                 //b=vsop87a_full.getPluto();
@@ -296,9 +266,10 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
                 const emb=vsop87a_full.getEmb(t);
                 b=vsop87a_full.getMoon(e,emb);
 
-                const ev=vsop87a_full_velocities.getEarth(t);
-                const embv=vsop87a_full_velocities.getEmb(t);
-                v=vsop87a_full_velocities.getMoon(ev,embv);
+                //const ev=vsop87a_full_velocities.getEarth(t);
+                //const embv=vsop87a_full_velocities.getEmb(t);
+                //v=vsop87a_full_velocities.getMoon(ev,embv);
+                v=[0,0,0];
 
 				break;
             case 10: //Sun
@@ -312,10 +283,6 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
         b[4]=v[1];
         b[5]=v[2];
         
-
-        //for(let i=0;i<b.length;i++){
-		//	b[i]=b[i]/AU_KM;
-        //}
 		return b;
 
 	}
@@ -337,8 +304,8 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 
 	static getNutationMatrix(jd_tdb){
 		const t=(jd_tdb-2451545.5)/36525.0;
-		const nut=nutation.nutation(t);
-		const dpsi=nut[0]
+		const nut=this.nutation2000BTruncated(t);
+		const dpsi=nut[0];
 		const deps=nut[1];
 		const eps = (+84381.406 - 46.836769*t - 0.0001831*t*t + 0.00200340*t*t*t - 0.000000576*t*t*t*t - 0.0000000434*t*t*t*t*t) /60/60*Math.PI/180;
 
@@ -349,4 +316,217 @@ ftp://anonymous:mail%40astropy.org@gdc.cddis.eosdis.nasa.gov/pub/products/iers/f
 		return c;
 	}
 
+	static nutation2000BTruncated(T){
+		//The IAU Resolutions on Astronomical Reference Systems, Time Scales, and Earth Rotation Models Explanation and Implementation (George H. Kaplan)
+		//https://arxiv.org/pdf/astro-ph/0602086.pdf
+	    //IAU 2000B Nutation truncated to 6 terms
+		let dp=0;
+		let de=0;
+		let arg;
+	
+		const AS2R = 1/60/60*Math.PI/180.0;
+	
+		const T2 = T * T;
+		const T3 = T * T2;
+		const T4 = T * T3;
+	
+		//Fundamental Arguments p46 eq 5.17, 5.18, 5.19
+		const Lp = AS2R*(1287104.79305  + 129596581.0481*T  - 0.5532*T2 + 0.000136*T3 - 0.00001149*T4);
+		const F  = AS2R*(335779.526232 + 1739527262.8478*T - 12.7512*T2 - 0.001037*T3 + 0.00000417*T4);
+		const D  = AS2R*(1072260.70369 + 1602961601.2090*T  - 6.3706*T2 + 0.006593*T3 - 0.00003169*T4);
+		const Om = AS2R*(450160.398036    - 6962890.5431*T  + 7.4722*T2 + 0.007702*T3 - 0.00005939*T4);
+	
+		//Terms summed from lowest to highest to reduce floating point rounding errors.  Page 88.
+		arg= Lp + 2*(F - D + Om);
+		dp+=(-516821 + 1226*T)*Math.sin(arg) + -524*Math.cos(arg);
+		de+=(224386 + -677*T)*Math.cos(arg) + -174*Math.sin(arg);
+
+		dp+=(1475877 + -3633*T)*Math.sin(Lp) + 11817*Math.cos(Lp);
+		de+=(73871 + -184*T)*Math.cos(Lp) + -1924*Math.sin(Lp);
+		
+		arg= 2*Om;
+		dp+=(2074554 + 207*T)*Math.sin(arg) + -698*Math.cos(arg);
+		de+=(-897492 + 470*T)*Math.cos(arg) + -291*Math.sin(arg);
+		
+		arg= 2*(F + Om);
+		dp+=(-2276413 + -234*T)*Math.sin(arg) + 2796*Math.cos(arg);
+		de+=(978459 + -485*T)*Math.cos(arg) + 1374*Math.sin(arg);
+		
+		arg= 2*(F - D + Om);
+		dp+=(-13170906 + -1675*T)*Math.sin(arg) + -13696*Math.cos(arg);
+		de+=(5730336 + -3015*T)*Math.cos(arg) + -4587*Math.sin(arg);
+
+		dp+=(-172064161 + -174666*T)*Math.sin(Om) + 33386*Math.cos(Om);
+		de+=(92052331 + 9086*T)*Math.cos(Om) + 15377*Math.sin(Om);
+	
+		return [dp*AS2R/10000000,de*AS2R/10000000];
+	}
+	
 }
+
+class Vec{
+	//Simplified Vector/Matrix library with only a few operations
+    //Supports 3d vectors, and 3x3 matrixes only
+
+    static transpose(m){
+        let t=new Array();
+        for(let i=0;i<m.length;i++){
+            t[i]=new Array();
+            for(let j=0;j<m[i].length;j++){
+                t[i][j]=m[j][i];
+            }
+        }
+        return t;
+    }
+
+    static vecMatrixMul(v,m){
+        let t=new Array();
+        t[0]=v[0]*m[0][0]+v[1]*m[0][1]+v[2]*m[0][2];
+        t[1]=v[0]*m[1][0]+v[1]*m[1][1]+v[2]*m[1][2];
+        t[2]=v[0]*m[2][0]+v[1]*m[2][1]+v[2]*m[2][2];
+
+        if(t.length>3){
+            t[3]=v[3]*m[0][0]+v[4]*m[0][1]+v[5]*m[0][2];
+            t[4]=v[3]*m[1][0]+v[4]*m[1][1]+v[5]*m[1][2];
+            t[5]=v[3]*m[2][0]+v[4]*m[2][1]+v[5]*m[2][2];
+        }
+
+        return t;
+    }
+
+    static vecDot(a,b){
+        return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
+    }
+
+    //Subtracts two arrays (vectors), a-b
+    static sub(a, b){
+        let t = new Array();
+        for(let i=0;i<a.length && i<b.length;i++){
+            t[i]=a[i]-b[i];
+        }
+        return t;
+    }
+
+    //Adds two arrays (vectors), a+b
+    static add(a, b){
+        let t = new Array();
+        for(let i=0;i<a.length && i<b.length;i++){
+            t[i]=a[i]+b[i];
+        }
+        return t;
+    }
+
+    static magnitude(a){
+        return Math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);
+    }
+
+    //Gets a rotation matrix about the x axis.  Angle R is in radians
+    static getXRotationMatrix(r){
+        let t=new Array();
+        t[0]=new Array();
+        t[1]=new Array();
+        t[2]=new Array();
+
+        t[0][0]=1;
+        t[0][1]=0;
+        t[0][2]=0;
+        t[1][0]=0;
+        t[1][1]=Math.cos(r);
+        t[1][2]=Math.sin(r);
+        t[2][0]=0;
+        t[2][1]=-Math.sin(r);
+        t[2][2]=Math.cos(r);
+
+        return t;
+    }
+
+    //Gets a rotation matrix about the y axis.  Angle R is in radians
+    static getYRotationMatrix(r){
+        let t=new Array();
+        t[0]=new Array();
+        t[1]=new Array();
+        t[2]=new Array();
+
+        t[0][0]=Math.cos(r);
+        t[0][1]=0;
+        t[0][2]=-Math.sin(r);
+        t[1][0]=0;
+        t[1][1]=1;
+        t[1][2]=0;
+        t[2][0]=Math.sin(r);
+        t[2][1]=0;
+        t[2][2]=Math.cos(r);
+
+        return t;
+    }
+
+    //Gets a rotation matrix about the z axis.  Angle R is in radians
+    static getZRotationMatrix(r){
+        let t=new Array();
+        t[0]=new Array();
+        t[1]=new Array();
+        t[2]=new Array();
+
+        t[0][0]=Math.cos(r);
+        t[0][1]=Math.sin(r);
+        t[0][2]=0;
+        t[1][0]=-Math.sin(r);
+        t[1][1]=Math.cos(r);
+        t[1][2]=0;
+        t[2][0]=0;
+        t[2][1]=0;
+        t[2][2]=1;
+
+        return t;
+    }
+
+    //Matrix dot product
+    static dot(a,b){
+        let m=new Array();
+        for(let i=0;i<a.length;i++){
+            m[i]=new Array();
+            for(let j=0;j<b[0].length;j++){
+                let temp=0;
+                for(let k=0;k<b.length;k++){
+                    temp+=a[i][k]*b[k][j];
+                }
+                m[i][j]=temp;
+            }
+        }
+        return m;
+    }
+}
+
+
+ 
+//Special "Math.floor()" function used by dateToJulianDate()
+function INT(d){
+	if(d>0){
+		return Math.floor(d);
+	}
+	return Math.floor(d)-1;
+}
+
+function gregorianDateToJulianDate(year, month, day, hour, min, sec){
+	let isGregorian=true;
+	if(year<1582 || (year == 1582 && (month < 10 || (month==10 && day < 5)))){
+		isGregorian=false;
+	}
+
+	if (month < 3){
+		year = year - 1;
+		month = month + 12;
+	}
+
+	let b = 0;
+	if (isGregorian){
+	let a = INT(year / 100.0);
+		b = 2 - a + INT(a / 4.0);
+	}
+
+	let jd=INT(365.25 * (year + 4716)) + INT(30.6001 * (month + 1)) + day + b - 1524.5;
+	jd+=hour/24.0;
+	jd+=min/24.0/60.0;
+	jd+=sec/24.0/60.0/60.0;
+	return jd;
+}	

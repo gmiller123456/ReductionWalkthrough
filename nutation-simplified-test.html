@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>Nutation Test</title>
+</head>    
+<body>
+    <script src="julian.js"></script>
+    <script src="nutation.js"></script>
+    <script src="nutation2000BGenerated.js"></script>
+    <script src="nutation2000BGeneratedTrunc.js"></script>
+<script>
+'use strict';
+
+const jd=gregorianDateToJulianDate(2020,3,14,16,43,22);
+const t=(jd-2451545.5)/36525.0;
+
+const n2000=nutation.nutation(t);
+const ntemp2=nutation2000BGenerated(t);
+const ntemp3=nutation2000BGeneratedTrunc(t);
+console.log(n2000);
+console.log(ntemp2);
+console.log(n2000[0]*180/Math.PI*60*60,n2000[1]*180/Math.PI*60*60);
+console.log(ntemp2[0]*180/Math.PI*60*60,ntemp2[1]*180/Math.PI*60*60);
+console.log(ntemp3[0]*180/Math.PI*60*60,ntemp3[1]*180/Math.PI*60*60);
+
+
+</script>
+</body>
+</html>

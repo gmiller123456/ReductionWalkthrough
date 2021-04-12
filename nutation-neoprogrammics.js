@@ -1,0 +1,190 @@
+function nutation_neoprammics(T){
+    const U2R = DAS2R/1E7;
+
+    const T2 = T * T;
+    const T3 = T * T2;
+    const T4 = T * T3;
+
+    let DegToRad = 3.141592653589793 / 180.0;
+
+    const L  = DegToRad*((485868.249036 + 1717915923.2178*T + 31.8792*T2 + 0.051635*T3 - 0.00024470*T4) / 3600.0);
+
+    const Lp = DegToRad*((1287104.79305 + 129596581.0481*T  - 0.5532*T2  + 0.000136*T3 - 0.00001149*T4) / 3600.0);
+
+    const F  = DegToRad*((335779.526232 + 1739527262.8478*T - 12.7512*T2 - 0.001037*T3 + 0.00000417*T4) / 3600.0);
+
+    const D  = DegToRad*((1072260.70369 + 1602961601.2090*T - 6.3706*T2  + 0.006593*T3 - 0.00003169*T4) / 3600.0);
+
+    const Om = DegToRad*((450160.398036 - 6962890.5431*T + 7.4722*T2  + 0.007702*T3 - 0.00005939*T4) / 3600.0);
+
+
+    let s = 0;
+    s = s + (-172064161 - 174666*T)*Math.sin(Om) + 33386*Math.cos(Om);
+    s = s + (-13170906 - 1675*T)*Math.sin(2*(F - D + Om)) - 13696*Math.cos(2*(F - D + Om));
+    s = s + (-2276413 - 234*T)*Math.sin(2*(F + Om)) + 2796*Math.cos(2*(F + Om));
+    s = s + (2074554 + 207*T)*Math.sin(2*Om) - 698*Math.cos(2*Om);
+    s = s + (1475877 - 3633*T)*Math.sin(Lp) + 11817*Math.cos(Lp);
+    s = s + (-516821 + 1226*T)*Math.sin(Lp + 2*(F - D + Om)) - 524*Math.cos(Lp + 2*(F - D + Om));
+    s = s + (711159 + 73*T)*Math.sin(L) - 872*Math.cos(L);
+    s = s + (-387298 - 367*T)*Math.sin(2*F + Om) + 380*Math.cos(2*F + Om);
+    s = s + (-301461 - 36*T)*Math.sin(L + 2*(F + Om)) + 816*Math.cos(L + 2*(F + Om));
+    s = s + (215829 - 494*T)*Math.sin(2*(F - D + Om) - Lp) + 111*Math.cos(2*(F - D + Om) - Lp);
+    s = s + (128227 + 137*T)*Math.sin(2*(F - D) + Om) + 181*Math.cos(2*(F - D) + Om);
+    s = s + (123457 + 11*T)*Math.sin(2*(F + Om) - L) + 19*Math.cos(2*(F + Om) - L);
+    s = s + (156994 + 10*T)*Math.sin(2*D - L) - 168*Math.cos(2*D - L);
+    s = s + (63110 + 63*T)*Math.sin(L + Om) + 27*Math.cos(L + Om);
+    s = s + (-57976 - 63*T)*Math.sin(Om - L) - 189*Math.cos(Om - L);
+    s = s + (-59641 - 11*T)*Math.sin(2*(F + D + Om) - L) + 149*Math.cos(2*(F + D + Om) - L);
+    s = s + (-51613 - 42*T)*Math.sin(L + 2*F + Om) + 129*Math.cos(L + 2*F + Om);
+    s = s + (45893 + 50*T)*Math.sin(2*(F - L) + Om) + 31*Math.cos(2*(F - L) + Om);
+    s = s + (63384 + 11*T)*Math.sin(2*D) - 150*Math.cos(2*D);
+    s = s + (-38571 - T)*Math.sin(2*(F + D + Om)) + 158*Math.cos(2*(F + D + Om));
+    s = s + 32481*Math.sin(2*(F - Lp - D + Om));
+    s = s - 47722*Math.sin(2*(D - L)) + 18*Math.cos(2*(D - L));
+    s = s + (-31046 - T)*Math.sin(2*(L + F + Om)) + 131*Math.cos(2*(L + F + Om));
+    s = s + 28593*Math.sin(L + 2*(F - D + Om)) - Math.cos(L + 2*(F - D + Om));
+    s = s + (20441 + 21*T)*Math.sin(2*F + Om - L) + 10*Math.cos(2*F + Om - L);
+    s = s + 29243*Math.sin(2*L) - 74*Math.cos(2*L);
+    s = s + 25887*Math.sin(2*F) - 66*Math.cos(2*F);
+    s = s + (-14053 - 25*T)*Math.sin(Lp + Om) + 79*Math.cos(Lp + Om);
+    s = s + (15164 + 10*T)*Math.sin(-L + 2*D + Om) + 11*Math.cos(-L + 2*D + Om);
+    s = s + (-15794 + 72*T)*Math.sin(2*(Lp + F - D + Om)) - 16*Math.cos(2*(Lp + F - D + Om));
+    s = s + 21783*Math.sin(2*(D - F)) + 13*Math.cos(2*(D - F));
+    s = s + (-12873 - 10*T)*Math.sin(L - 2*D + Om) - 37*Math.cos(L - 2*D + Om);
+    s = s + (-12654 + 11*T)*Math.sin(-Lp + Om) + 63*Math.cos(-Lp + Om);
+    s = s - 10204*Math.sin(2*(F + D) + Om - L) - 25*Math.cos(2*(F + D) + Om - L);
+    s = s + (16707 - 85*T)*Math.sin(2*Lp) - 10*Math.cos(2*Lp);
+    s = s - 7691*Math.sin(L + 2*(F + D + Om)) - 44*Math.cos(L + 2*(F + D + Om));
+    s = s - 11024*Math.sin(2*(F - L)) + 14*Math.cos(2*(F - L));
+    s = s + (7566 - 21*T)*Math.sin(Lp + 2*(F + Om)) - 11*Math.cos(Lp + 2*(F + Om));
+    s = s + (-6637 - 11*T)*Math.sin(2*(F + D) + Om) + 25*Math.cos(2*(F + D) + Om);
+    s = s + (-7141 + 21*T)*Math.sin(2*(F + Om) - Lp) + 8*Math.cos(2*(F + Om) - Lp);
+    s = s + (-6302 - 11*T)*Math.sin(2*D + Om) + 2*Math.cos(2*D + Om);
+    s = s + (5800 + 10*T)*Math.sin(L + 2*(F - D) + Om) + 2*Math.cos(L + 2*(F - D) + Om);
+    s = s + 6443*Math.sin(2*(L + F - D + Om)) - 7*Math.cos(2*(L + F - D + Om));
+    s = s + (-5774 - 11*T)*Math.sin(2*(D - L) + Om) - 15*Math.cos(2*(D - L) + Om);
+    s = s - 5350*Math.sin(2*(L + F) + Om) - 21*Math.cos(2*(L + F) + Om);
+    s = s + (-4752 - 11*T)*Math.sin(2*(F - D) + Om - Lp) - 3*Math.cos(2*(F - D) + Om - Lp);
+    s = s + (-4940 - 11*T)*Math.sin(Om - 2*D) - 21*Math.cos(Om - 2*D);
+    s = s + 7350*Math.sin(2*D - L - Lp) - 8*Math.cos(2*D - L - Lp);
+    s = s + 4065*Math.sin(2*(L - D) + Om) + 6*Math.cos(2*(L - D) + Om);
+    s = s + 6579*Math.sin(L + 2*D) - 24*Math.cos(L + 2*D);
+    s = s + 3579*Math.sin(Lp + 2*(F - D) + Om) + 5*Math.cos(Lp + 2*(F - D) + Om);
+    s = s + 4725*Math.sin(L - Lp) - 6*Math.cos(L - Lp);
+    s = s - 3075*Math.sin(2*(F + Om - L)) + 2*Math.cos(2*(F + Om - L));
+    s = s - 2904*Math.sin(3*L + 2*(F + Om)) - 15*Math.cos(3*L + 2*(F + Om));
+    s = s + 4348*Math.sin(2*D - Lp) - 10*Math.cos(2*D - Lp);
+    s = s - 2878*Math.sin(L - Lp + 2*(F + Om)) - 8*Math.cos(L - Lp + 2*(F + Om));
+    s = s - 4230*Math.sin(D) - 5*Math.cos(D);
+    s = s - 2819*Math.sin(2*(F + D + Om) - L - Lp) - 7*Math.cos(2*(F + D + Om) - L - Lp);
+    s = s - 4056*Math.sin(2*F - L) - 5*Math.cos(2*F - L);
+    s = s - 2647*Math.sin(2*(F + D + Om) - Lp) - 11*Math.cos(2*(F + D + Om) - Lp);
+    s = s - 2294*Math.sin(Om - 2*L) + 10*Math.cos(Om - 2*L);
+    s = s + 2481*Math.sin(L + Lp + 2*(F + Om)) - 7*Math.cos(L + Lp + 2*(F + Om));
+    s = s + 2179*Math.sin(2*L + Om) - 2*Math.cos(2*L + Om);
+    s = s + 3276*Math.sin(Lp + D - L) + Math.cos(Lp + D - L);
+    s = s - 3389*Math.sin(L + Lp) - 5*Math.cos(L + Lp);
+    s = s + 3339*Math.sin(L + 2*F) - 13*Math.cos(L + 2*F);
+    s = s - 1987*Math.sin(2*(F - D) + Om - L) + 6*Math.cos(2*(F - D) + Om - L);
+    s = s - 1981*Math.sin(L + 2*Om);
+    s = s + 4026*Math.sin(D - L) - 353*Math.cos(D - L);
+    s = s + 1660*Math.sin(2*F + D + 2*Om) - 5*Math.cos(D + 2*(F + Om));
+    s = s - 1521*Math.sin(2*(F + 2*D + Om) - L) - 9*Math.cos(2*(F + 2*D + Om) - L);
+    s = s + 1314*Math.sin(Lp + D + Om - L);
+    s = s - 1283*Math.sin(2*(F - D - Lp) + Om);
+    s = s - 1331*Math.sin(L + 2*F + 2*D + Om) - 8*Math.cos(L + 2*(F + D) + Om);
+    s = s + 1383*Math.sin(2*(F - L + D + Om)) - 2*Math.cos(2*(F - L + D + Om));
+    s = s + 1405*Math.sin(2*Om - L) + 4*Math.cos(2*Om - L);
+    s = s + 1290*Math.sin(L + Lp + 2*(F - D + Om));
+
+    const dPsiDeg = s;
+
+    s = 0;
+    s = s + (92052331 + 9086*T)*Math.cos(Om) + 15377*Math.sin(Om);
+    s = s + (5730336 - 3015*T)*Math.cos(2*(F - D + Om)) - 4587*Math.sin(2*(F - D + Om));
+    s = s + (978459 - 485*T)*Math.cos(2*(F + Om)) + 1374*Math.sin(2*(F + Om));
+    s = s + (-897492 + 470*T)*Math.cos(2*Om) - 291*Math.sin(2*Om);
+    s = s + (73871 - 184*T)*Math.cos(Lp) - 1924*Math.sin(Lp);
+    s = s + (224386 - 677*T)*Math.cos(Lp + 2*(F - D + Om)) - 174*Math.sin(Lp + 2*(F - D + Om));
+    s = s - 6750*Math.cos(L) - 358*Math.sin(L);
+    s = s + (200728 + 18*T)*Math.cos(2*F + Om) + 318*Math.sin(2*F + Om);
+    s = s + (129025 - 63*T)*Math.cos(L + 2*(F + Om)) + 367*Math.sin(L + 2*(F + Om));
+    s = s + (-95929 + 299*T)*Math.cos(2*(F - D + Om) - Lp) + 132*Math.sin(2*(F - D + Om) - Lp);
+    s = s + (-68982 - 9*T)*Math.cos(2*(F - D) + Om) + 39*Math.sin(2*(F - D) + Om);
+    s = s + (-53311 + 32*T)*Math.cos(2*(F + Om) - L) - 4*Math.sin(2*(F + Om) - L);
+    s = s - 1235*Math.cos(2*D - L) - 82*Math.sin(2*D - L);
+    s = s - 33228*Math.cos(L + Om) + 9*Math.sin(L + Om);
+    s = s + 31429*Math.cos(Om - L) - 75*Math.sin(Om - L);
+    s = s + (25543 - 11*T)*Math.cos(2*(F + D + Om) - L) + 66*Math.sin(2*(F + D + Om) - L);
+    s = s + 26366*Math.cos(L + 2*F + Om) + 78*Math.sin(L + 2*F + Om);
+    s = s + (-24236 - 10*T)*Math.cos(2*(F - L) + Om) + 20*Math.sin(2*(F - L) + Om);
+    s = s - 1220*Math.cos(2*D) - 29*Math.sin(2*D);
+    s = s + (16452 - 11*T)*Math.cos(2*(F + D + Om)) + 68*Math.sin(2*(F + D + Om));
+    s = s - 13870*Math.cos(2*(F - Lp - D + Om));
+    s = s + 477*Math.cos(2*(D - L)) - 25*Math.sin(2*(D - L));
+    s = s + (13238 - 11*T)*Math.cos(2*(L + F + Om)) + 59*Math.sin(2*(L + F + Om));
+    s = s + (-12338 + 10*T)*Math.cos(L + 2*(F - D + Om)) - 3*Math.sin(L + 2*(F - D + Om));
+    s = s - 10758*Math.cos(2*F + Om - L) + 3*Math.sin(2*F + Om - L);
+    s = s - 609*Math.cos(2*L) - 13*Math.sin(2*L);
+    s = s - 550*Math.cos(2*F) - 11*Math.sin(2*F);
+    s = s + (8551 - 2*T)*Math.cos(Lp + Om) - 45*Math.sin(Lp + Om);
+    s = s - 8001*Math.cos(2*D - L + Om) + Math.sin(2*D - L + Om);
+    s = s + (6850 - 42*T)*Math.cos(2*(Lp + F - D + Om)) - 5*Math.sin(2*(Lp + F - D + Om));
+    s = s - 167*Math.cos(2*(D - F)) - 13*Math.sin(2*(D - F));
+    s = s + 6953*Math.cos(L - 2*D + Om) - 14*Math.sin(L - 2*D + Om);
+    s = s + 6415*Math.cos(Om - Lp) + 26*Math.sin(Om - Lp);
+    s = s + 5222*Math.cos(2*(F + D) + Om - L) + 15*Math.sin(2*(F + D) + Om - L);
+    s = s + (168 - T)*Math.cos(2*Lp) + 10*Math.sin(2*Lp);
+    s = s + 3268*Math.cos(L + 2*(F + D + Om)) + 19*Math.sin(L + 2*(F + D + Om));
+    s = s + 104*Math.cos(2*(F - L)) + 2*Math.sin(2*(F - L));
+    s = s - 3250*Math.cos(Lp + 2*(F + Om)) + 5*Math.sin(Lp + 2*(F + Om));
+    s = s + 3353*Math.cos(2*(F + D) + Om) + 14*Math.sin(2*(F + D) + Om);
+    s = s + 3070*Math.cos(2*(F + Om) - Lp) + 4*Math.sin(2*(F + Om) - Lp);
+    s = s + 3272*Math.cos(2*D + Om) + 4*Math.sin(2*D + Om);
+    s = s - 3045*Math.cos(L + 2*(F - D) + Om) + Math.sin(L + 2*(F - D) + Om);
+    s = s - 2768*Math.cos(2*(L + F - D + Om)) + 4*Math.sin(2*(L + F - D + Om));
+    s = s + 3041*Math.cos(2*(D - L) + Om) - 5*Math.sin(2*(D - L) + Om);
+    s = s + 2695*Math.cos(2*(L + F) + Om) + 12*Math.sin(2*(L + F) + Om);
+    s = s + 2719*Math.cos(2*(F - D) + Om - Lp) - 3*Math.sin(2*(F - D) + Om - Lp);
+    s = s + 2720*Math.cos(Om - 2*D) - 9*Math.sin(Om - 2*D);
+    s = s - 51*Math.cos(2*D - L - Lp) - 4*Math.sin(2*D - L - Lp);
+    s = s - 2206*Math.cos(2*(L - D) + Om) - Math.sin(2*(L - D) + Om);
+    s = s - 199*Math.cos(L + 2*D) - 2*Math.sin(L + 2*D);
+    s = s - 1900*Math.cos(Lp + 2*(F - D) + Om) - Math.sin(Lp + 2*(F - D) + Om);
+    s = s - 41*Math.cos(L - Lp) - 3*Math.sin(L - Lp);
+    s = s + 1313*Math.cos(2*(F - L + Om)) - Math.sin(2*(F - L + Om));
+    s = s + 1233*Math.cos(3*L + 2*(F + Om)) + 7*Math.sin(3*L + 2*(F + Om));
+    s = s - 81*Math.cos(-Lp + 2*D) - 2*Math.sin(-Lp + 2*D);
+    s = s + 1232*Math.cos(L - Lp + 2*(F + Om)) + 4*Math.sin(L - Lp + 2*(F + Om));
+    s = s - 20*Math.cos(D) + 2*Math.sin(D);
+    s = s + 1207*Math.cos(2*(F + D + Om) - L - Lp) + 3*Math.sin(2*(F + D + Om) - L - Lp);
+    s = s + 40*Math.cos(2*F - L) - 2*Math.sin(2*F - L);
+    s = s + 1129*Math.cos(2*(F + D + Om) - Lp) + 5*Math.sin(2*(F + D + Om) - Lp);
+    s = s + 1266*Math.cos(Om - 2*L) - 4*Math.sin(Om - 2*L);
+    s = s - 1062*Math.cos(L + Lp + 2*(F + Om)) + 3*Math.sin(L + Lp + 2*(F + Om));
+    s = s - 1129*Math.cos(2*L + Om) + 2*Math.sin(2*L + Om);
+    s = s - 9*Math.cos(Lp + D - L);
+    s = s + 35*Math.cos(L + Lp) - 2*Math.sin(L + Lp);
+    s = s - 107*Math.cos(L + 2*F) - Math.sin(L + 2*F);
+    s = s + 1073*Math.cos(2*(F - D) + Om - L) - 2*Math.sin(2*(F - D) + Om - L);
+    s = s + 854*Math.cos(L + 2*Om);
+    s = s - 553*Math.cos(D - L) + 139*Math.sin(D - L);
+    s = s - 710*Math.cos(2*(F + Om) + D) + 2*Math.sin(2*(F + Om) + D);
+    s = s + 647*Math.cos(2*(F + 2*D + Om) - L) + 4*Math.sin(2*(F + 2*D + Om) - L);
+    s = s - 700*Math.cos(Lp + D + Om - L);
+    s = s + 672*Math.cos(2*(F - Lp - D) + Om);
+    s = s + 663*Math.cos(L + 2*(F + D) + Om) + 4*Math.sin(L + 2*(F + D) + Om);
+    s = s - 594*Math.cos(2*(F - L + D + Om)) + 2*Math.sin(2*(F - L + D + Om));
+    s = s - 610*Math.cos(2*Om - L) - 2*Math.sin(2*Om - L);
+    s = s - 556*Math.cos(L + Lp + 2*(F - D + Om));
+
+    const dEpsDeg = s;
+
+    const DMAS2R = DAS2R / 1E3;
+    const DPPLAN = - 0.135 * DMAS2R;
+    const DEPLAN = + 0.388 * DMAS2R;
+
+
+
+    return [dPsiDeg*U2R + DPPLAN,dEpsDeg*U2R+DEPLAN];
+}
