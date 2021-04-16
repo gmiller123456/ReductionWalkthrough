@@ -2,12 +2,30 @@ class Reduce12{
 	//By Greg Miller (gmiller@gregmiller.net)
 	//Released as public domain
 
+	/*
+	Main function.
+	body - Integer representing the planet: 0=Mercury ... 7=Neptune, 9=Moon, 10=Sun
+	jd_utc - a Julian date representing the UCT time of observation
+	observer - an array observer[0]=Latitude, [1] = Longitude, [2] = Altitude - all input in radians
+
+	Returns array of 6 elements in radians
+	0 - Declination in J2000 - radians
+	1 - Right ascension in J2000 - radians
+	2 - Declination of Date - radians
+	3 - Right ascension of Date - radians
+	4 - Alt (0 horizon, 90 zenith) - radians
+	5 - Az (0 North, 90 East) - radians
+
+	Multiply each by 180/Math.PI to convert to degrees (declination, alt, az)
+	Multiply each by 180/Math.PI/15 to convert to hours (right ascension)
+	*/
+
 	static reduce(body,jd_utc,observer){
 		const jd_tt=this.convertUTCtoTT(jd_utc);
-        const jd_tdb=jd_tt;
+        const jd_tdb=jd_tt;  //Converting TT to TDB won't produce more accurate results
 		
-		const ut1_utc=0.0/86400.0;  //TODO: UT1-UTC offset
-		const jd_ut1=jd_utc + ut1_utc;
+		const ut1_utc=0.0;  //TODO: UT1-UTC offset
+		const jd_ut1=jd_utc + ut1_utc/86400.0;
 
 		const earth=this.getBodyPV(2,jd_tdb);
 		const target=this.getBodyLightAdjusted(earth,body,jd_tdb);
@@ -25,7 +43,6 @@ class Reduce12{
 		const radecj2000=this.xyzToRaDec(topocentricTarget);
 
 		const aberrated=this.aberration(topocentricTarget,earth);
-
 		const precessed=Vec.vecMatrixMul(aberrated,precessionMatrix);
 		const nutated=Vec.vecMatrixMul(precessed,nutationMatrix);
 
@@ -34,6 +51,13 @@ class Reduce12{
 		
 		return [radecj2000[0],radecj2000[1],radec[0],radec[1],altaz[0],altaz[1]];
 	}
+
+	/*
+	------------------------------------------------------------------------------------------------------
+	The only functions past this point which a user may need to call are the functions at the end for
+	computing Julian Dates
+	------------------------------------------------------------------------------------------------------
+	*/
 
 	static aberration(pos,earthPV){
 		//"MEAN AND APPARENT PLACE COMPUTATIONS IN THE NEW IAU SYSTEM. III. APPARENT, TOPOCENTRIC, AND ASTROMETRIC PLACES OF PLANETS AND STARS"
@@ -154,7 +178,7 @@ class Reduce12{
 
 	static getObserverGeocentricPosition(observer,jd_ut){
 		const ecef=this.convertGeodedicLatLonToECEFXYZ(observer[0],observer[1],observer[2]);
-		const gast=nutation.iauGst00b(0,jd_ut);
+		const gast=this.greenwichApparentSiderealTime(jd_ut);
 
         const m=Vec.getZRotationMatrix(-gast);
 		const gcrs=Vec.vecMatrixMul(ecef,m);
@@ -201,7 +225,7 @@ class Reduce12{
 	static raDecToAltAz(ra,dec,lat,lon,jd_ut){
 		//based on Explanatory supplement eq 7.16
 		//const gmst=this.greenwichMeanSiderealTime(jd_ut);
-		const gast=nutation.iauGst00b(0,jd_ut);
+		const gast=this.greenwichApparentSiderealTime(jd_ut);
 		const localSiderealTime=gast+lon;
 
 		const H=localSiderealTime - ra;
@@ -213,19 +237,17 @@ class Reduce12{
 
 	static getBodyPV(body,jd_tdb){
         let b;
-        let v;
+        let v=[0,0,0]; //Velocity is only needed for the Earth, set others to 0 to save time
         const t= (jd_tdb - 2451545.0) / 365250.0;
 		
 		switch (body){
             case 0:
                 b=vsop87a_full.getMercury(t);
                 //v=vsop87a_full_velocities.getMercury(t);
-                v=[0,0,0];
                 break;
             case 1:
                 b=vsop87a_full.getVenus(t);
                 //v=vsop87a_full_velocities.getVenus(t);
-                v=[0,0,0];
                 break;
             case 2: //Earth
 				b=vsop87a_full.getEarth(t);
@@ -234,32 +256,26 @@ class Reduce12{
             case 3:
                 b=vsop87a_full.getMars(t);
                 //v=vsop87a_full_velocities.getMars(t);
-                v=[0,0,0];
                 break;
             case 4:
                 b=vsop87a_full.getJupiter(t);
                 //v=vsop87a_full_velocities.getJupiter(t);
-                v=[0,0,0];
                 break;
             case 5:
                 b=vsop87a_full.getSaturn(t);
                 //v=vsop87a_full_velocities.getSaturn(t);
-                v=[0,0,0];
                 break;
             case 6:
                 b=vsop87a_full.getUranus(t);
                 //v=vsop87a_full_velocities.getUranus(t);
-                v=[0,0,0];
                 break;
             case 7:
                 b=vsop87a_full.getNeptune(t);
                 //v=vsop87a_full_velocities.getNeptune(t);
-                v=[0,0,0];
                 break;
             case 8:
                 //b=vsop87a_full.getPluto();
                 b=[0,0,0];
-                v=[0,0,0];
                 break;
             case 9: //Moon
                 const e=vsop87a_full.getEarth(t);
@@ -269,12 +285,10 @@ class Reduce12{
                 //const ev=vsop87a_full_velocities.getEarth(t);
                 //const embv=vsop87a_full_velocities.getEmb(t);
                 //v=vsop87a_full_velocities.getMoon(ev,embv);
-                v=[0,0,0];
 
 				break;
             case 10: //Sun
                 b=[0,0,0];
-                v=[0,0,0];
                 break;
         }
         b=this.rotvsop2J2000(b);
@@ -361,6 +375,56 @@ class Reduce12{
 	
 		return [dp*AS2R/10000000,de*AS2R/10000000];
 	}
+
+    static greenwichApparentSiderealTime(jd_ut1){
+        const gmst = this.greenwichMeanSiderealTime(jd_ut1);
+        const ee = this.equationOfTheEquinoxes(jd_ut1);
+        let gast = (gmst + ee) % (Math.PI*2);
+        if(gast<0) gast+=Math.PI*2;
+     
+        return gast;
+     }
+
+     static greenwichMeanSiderealTime(jd_ut1){
+		//The IAU Resolutions on Astronomical Reference Systems, Time Scales, and Earth Rotation Models Explanation and Implementation (George H. Kaplan)
+		//https://arxiv.org/pdf/astro-ph/0602086.pdf
+        const t = (jd_ut1 - 2451545.0) / 36525.0;
+     
+        const era=this.earthRotationAngle(jd_ut1);
+
+        //EQ 2.12
+        let gmst = (era + (0.014506 + 4612.15739966*t + 1.39667721*t*t + -0.00009344*t*t*t + 0.00001882*t*t*t*t)/60/60*Math.PI/180) % (Math.PI*2);
+        if(gmst<0) gmst+=Math.PI*2;
+     
+        return gmst;
+     }
+
+     static earthRotationAngle(jd_ut1){
+		//Explanatory Supplement eq 6.59
+        const t = jd_ut1 - 2451545.0;
+     
+        const frac=jd_ut1 % 1.0;
+     
+        let era = (Math.PI*2 * (0.7790572732640 + 0.00273781191135448 * t + frac)) % (Math.PI*2);
+        if(era<0) era+=Math.PI*2;
+     
+        return era;
+     }
+
+     static equationOfTheEquinoxes(jd_ut1){
+        const t = (jd_ut1 - 2451545.0) / 36525.0;
+
+        //Explanatory Supplement eq 6.39
+        const epsa = (84381.406 + -46.836769*t + -0.0001831*t*t + 0.00200340*t*t*t  + -0.000000576*t*t*t*t + -0.0000000434*t*t*t*t*t) /60/60*Math.PI/180;
+  
+        const nut=Reduce12.nutation2000BTruncated(t);
+        const dpsi=nut[0];
+        const deps=nut[1];
+     
+        const ee = dpsi * Math.cos(epsa+deps);
+     
+        return ee;
+     }
 	
 }
 
@@ -497,8 +561,6 @@ class Vec{
     }
 }
 
-
- 
 //Special "Math.floor()" function used by dateToJulianDate()
 function INT(d){
 	if(d>0){
